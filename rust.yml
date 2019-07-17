@@ -52,6 +52,7 @@ jobs:
     condition: eq(variables['Agent.OS'], 'Linux')
 
   - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       echo $ALEC_A
       echo $ALEC_B
       echo $ALEC_C
@@ -63,7 +64,6 @@ jobs:
       echo $ALEC_I
       echo $ALEC_J
       echo $ALEC_K
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
       rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
