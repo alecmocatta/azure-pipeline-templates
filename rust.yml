@@ -14,6 +14,9 @@ jobs:
 
   # Inspired by https://github.com/tokio-rs/tokio/blob/master/ci/azure-install-rust.yml
   steps:
+  - checkout: self
+    persistCredentials: true
+
   - script: |
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain none
@@ -38,22 +41,36 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      for TOOLCHAIN in $RUST_TOOLCHAIN; do (
-        rustup toolchain install $TOOLCHAIN
-        for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
-        rustc +$TOOLCHAIN -Vv
-        cargo +$TOOLCHAIN -V
-      ); done
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
       rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $RUST_LINT_TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
-    displayName: Install Rust matrix
+    displayName: Install Rust lint
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
+      cargo +$RUST_LINT_TOOLCHAIN fmt -- --check || (
+        cargo +$RUST_LINT_TOOLCHAIN fmt
+        git config user.email tidy@example.com
+        git config user.name "Tidy"
+        git add -A
+        git commit -m "Automatic formatting with rustfmt"
+        git push
+        false
+      )
     displayName: Check formatting
+
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      for TOOLCHAIN in $RUST_TOOLCHAIN; do (
+        if [ "$TOOLCHAIN" != "$RUST_LINT_TOOLCHAIN" ]; then
+          rustup toolchain install $TOOLCHAIN
+          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
+        fi
+        rustc +$TOOLCHAIN -Vv
+        cargo +$TOOLCHAIN -V
+      ); done
+    displayName: Install Rust matrix
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
