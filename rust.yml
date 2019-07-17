@@ -18,11 +18,9 @@ jobs:
     alec_i: $[variables['Build.RequestedForEmail']]
     alec_j: $[variables['Build.RequestedForId']]
     alec_k: $[variables['Build.SourceBranch']]
-  strategy:
-    matrix: ${{ parameters.matrix }}
 
   pool:
-    vmImage: $(imageName)
+    vmImage: 'macos-10.13'
 
   # Inspired by https://github.com/tokio-rs/tokio/blob/master/ci/azure-install-rust.yml
   steps:
