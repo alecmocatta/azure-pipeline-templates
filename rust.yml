@@ -5,7 +5,19 @@ parameters:
 jobs:
 - job: ''
 
-  variables: ${{ parameters.default }}
+  # variables: ${{ parameters.default }}
+  variables:
+    alec_a: $[variables['System.PullRequest.PullRequestId']]
+    alec_b: $[variables['System.PullRequest.PullRequestNumber']]
+    alec_c: $[variables['System.PullRequest.SourceBranch']]
+    alec_d: $[variables['System.PullRequest.SourceRepositoryURI']]
+    alec_e: $[variables['System.PullRequest.TargetBranch']]
+    alec_f: $[variables['Build.SourceBranch']]
+    alec_g: $[variables['Build.SourceBranchName']]
+    alec_h: $[variables['Build.RequestedFor']]
+    alec_i: $[variables['Build.RequestedForEmail']]
+    alec_j: $[variables['Build.RequestedForId']]
+    alec_k: $[variables['Build.SourceBranch']]
   strategy:
     matrix: ${{ parameters.matrix }}
 
@@ -40,6 +52,17 @@ jobs:
     condition: eq(variables['Agent.OS'], 'Linux')
 
   - bash: |
+      echo $ALEC_A
+      echo $ALEC_B
+      echo $ALEC_C
+      echo $ALEC_D
+      echo $ALEC_E
+      echo $ALEC_F
+      echo $ALEC_G
+      echo $ALEC_H
+      echo $ALEC_I
+      echo $ALEC_J
+      echo $ALEC_K
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
@@ -55,7 +78,7 @@ jobs:
         git config user.name "Tidy"
         git add -A
         git commit -m "Automatic formatting with rustfmt"
-        git push
+        git push origin HEAD:refs/pull/14/head
         false
       )
     displayName: Check & fix formatting
