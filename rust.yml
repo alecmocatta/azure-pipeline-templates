@@ -58,7 +58,14 @@ jobs:
         git push
         false
       )
+    displayName: Check & fix formatting
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
     displayName: Check formatting
+    condition: ne(variables['Build.Reason'], 'PullRequest')
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
