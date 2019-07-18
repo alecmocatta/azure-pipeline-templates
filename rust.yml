@@ -50,7 +50,11 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check || (
+        git status
+        git log
         git reset --hard HEAD~1
+        git status
+        git log
         cargo +$RUST_LINT_TOOLCHAIN fmt
         git config user.email tidy@example.com
         git config user.name "Tidy"
