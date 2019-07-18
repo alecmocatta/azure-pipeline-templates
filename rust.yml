@@ -52,7 +52,7 @@ jobs:
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check || (
         git status
         git log
-        git reset --hard HEAD~1
+        git reset --hard HEAD^2
         git status
         git log
         cargo +$RUST_LINT_TOOLCHAIN fmt
