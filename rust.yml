@@ -56,12 +56,9 @@ jobs:
         git add -A
         git commit -m "Automatic formatting with rustfmt"
         env
-        git push "$SOURCE_REPOSITORY_URI" "HEAD:$SOURCE_BRANCH"
+        git push "$SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI" "HEAD:$SYSTEM_PULLREQUEST_SOURCEBRANCH"
         false
       )
-    env:
-      SOURCE_REPOSITORY_URI: $[ variables['System.PullRequest.SourceRepositoryURI'] ]
-      SOURCE_BRANCH: $[ variables['System.PullRequest.SourceBranch'] ]
     displayName: Check & fix formatting
     condition: eq(variables['Build.Reason'], 'PullRequest')
 
