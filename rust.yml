@@ -21,23 +21,23 @@ jobs:
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
-    displayName: 'Install Rust (Windows)'
     condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: 'Install Rust (Windows)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-    displayName: 'Install Rust (Darwin)'
     condition: eq(variables['Agent.OS'], 'Darwin')
+    displayName: 'Install Rust (Darwin)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
       sudo apt-get install -y gcc-multilib
-    displayName: 'Install Rust (Linux)'
     condition: eq(variables['Agent.OS'], 'Linux')
+    displayName: 'Install Rust (Linux)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
@@ -56,17 +56,19 @@ jobs:
         git add -A
         git commit -m "Automatic formatting with rustfmt"
         env
-        git push "$SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI" "HEAD:$SYSTEM_PULLREQUEST_SOURCEBRANCH"
+        git -c http.extraheader="AUTHORIZATION: basic $SYSTEM_ACCESSTOKEN" push "$SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI" "HEAD:$SYSTEM_PULLREQUEST_SOURCEBRANCH"
         false
       )
-    displayName: Check & fix formatting
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Check & fix formatting
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
-    displayName: Check formatting
     condition: ne(variables['Build.Reason'], 'PullRequest')
+    displayName: Check formatting
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
