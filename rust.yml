@@ -5,22 +5,12 @@ parameters:
 jobs:
 - job: ''
 
-  # variables: ${{ parameters.default }}
-  variables:
-    alec_a: $[variables['System.PullRequest.PullRequestId']]
-    alec_b: $[variables['System.PullRequest.PullRequestNumber']]
-    alec_c: $[variables['System.PullRequest.SourceBranch']]
-    alec_d: $[variables['System.PullRequest.SourceRepositoryURI']]
-    alec_e: $[variables['System.PullRequest.TargetBranch']]
-    alec_f: $[variables['Build.SourceBranch']]
-    alec_g: $[variables['Build.SourceBranchName']]
-    alec_h: $[variables['Build.RequestedFor']]
-    alec_i: $[variables['Build.RequestedForEmail']]
-    alec_j: $[variables['Build.RequestedForId']]
-    alec_k: $[variables['Build.SourceBranch']]
+  variables: ${{ parameters.default }}
+  strategy:
+    matrix: ${{ parameters.matrix }}
 
   pool:
-    vmImage: 'macos-10.13'
+    vmImage: $(imageName)
 
   # Inspired by https://github.com/tokio-rs/tokio/blob/master/ci/azure-install-rust.yml
   steps:
@@ -51,17 +41,6 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
-      echo $ALEC_A
-      echo $ALEC_B
-      echo $ALEC_C
-      echo $ALEC_D
-      echo $ALEC_E
-      echo $ALEC_F
-      echo $ALEC_G
-      echo $ALEC_H
-      echo $ALEC_I
-      echo $ALEC_J
-      echo $ALEC_K
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
       rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
@@ -76,9 +55,12 @@ jobs:
         git config user.name "Tidy"
         git add -A
         git commit -m "Automatic formatting with rustfmt"
-        git push origin HEAD:refs/pull/14/head
+        git push "$SOURCE_REPOSITORY_URI" "HEAD:$SOURCE_BRANCH"
         false
       )
+    env:
+      SOURCE_REPOSITORY_URI: $[variables['System.PullRequest.SourceRepositoryURI']]
+      SOURCE_BRANCH: $[variables['System.PullRequest.SourceBranch']]
     displayName: Check & fix formatting
     condition: eq(variables['Build.Reason'], 'PullRequest')
 
