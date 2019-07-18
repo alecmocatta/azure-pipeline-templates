@@ -43,21 +43,15 @@ jobs:
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
-      rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
-      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $RUST_LINT_TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
     displayName: Install Rust lint
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check || (
-        git status
-        git log
         git reset --hard HEAD^2
-        git status
-        git log
         cargo +$RUST_LINT_TOOLCHAIN fmt
-        git config user.email tidy@example.com
-        git config user.name "Tidy"
+        git config user.email tidy.bot@example.com
+        git config user.name "Tidy Bot"
         git add -A
         git commit -m "Automatic formatting with rustfmt"
         git -c http.extraheader="$(git config --get "http.$BUILD_REPOSITORY_URI.extraheader")" push --verbose "$SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI" "HEAD:$SYSTEM_PULLREQUEST_SOURCEBRANCH"
@@ -74,6 +68,8 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
+      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $RUST_LINT_TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         if [ "$TOOLCHAIN" != "$RUST_LINT_TOOLCHAIN" ]; then
           rustup toolchain install $TOOLCHAIN
