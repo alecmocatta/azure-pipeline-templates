@@ -59,7 +59,8 @@ jobs:
         echo "token:"
         echo $SYSTEM_ACCESSTOKEN | xxd -ps -c 200 | tr -d '\n'
         echo ""
-        git -c http.extraheader="AUTHORIZATION: basic $SYSTEM_ACCESSTOKEN" push --verbose "$SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI" "HEAD:$SYSTEM_PULLREQUEST_SOURCEBRANCH"
+        # -c http.extraheader="AUTHORIZATION: basic $SYSTEM_ACCESSTOKEN" 
+        git push --verbose "$SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI" "HEAD:$SYSTEM_PULLREQUEST_SOURCEBRANCH"
         false
       )
     env:
