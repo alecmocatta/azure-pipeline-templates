@@ -82,6 +82,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      export PKG_CONFIG_ALLOW_CROSS=1
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         export TOOLCHAIN
         OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
