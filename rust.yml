@@ -117,6 +117,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      export PKG_CONFIG_ALLOW_CROSS=1
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
         cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
       done
