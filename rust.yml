@@ -102,8 +102,8 @@ jobs:
               cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES --release
             ); done
             for TARGET in $RUST_TARGET_RUN; do (
-              eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "$RUST_TEST_FLAGS"
-              eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "$RUST_TEST_FLAGS"
+              eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
+              eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_FLAGS-}"
               RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
               [ ! -d examples ] || for example in examples/*; do example=${example##*/}; (
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --no-default-features --features "$FEATURES" $ALL_FEATURES
