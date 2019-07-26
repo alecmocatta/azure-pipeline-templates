@@ -104,7 +104,7 @@ jobs:
             ); done
             for TARGET in $RUST_TARGET_RUN; do (
               eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
-              eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_FLAGS-}"
+              eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_RELEASE_FLAGS-}"
               RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
               for example in examples/*.rs examples/*/; do example=${example#"examples/"}; example=${example%".rs"}; example=${example%"/"}; (
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
