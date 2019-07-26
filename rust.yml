@@ -25,14 +25,14 @@ jobs:
     displayName: 'Install Rust (Windows)'
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
     condition: eq(variables['Agent.OS'], 'Darwin')
     displayName: 'Install Rust (Darwin)'
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
       sudo dpkg --add-architecture i386
@@ -42,13 +42,13 @@ jobs:
     displayName: 'Install Rust (Linux)'
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
     displayName: Install Rust lint
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check || (
         git reset --hard HEAD^2
         cargo +$RUST_LINT_TOOLCHAIN fmt
@@ -63,13 +63,13 @@ jobs:
     displayName: Check & fix formatting
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
     condition: ne(variables['Build.Reason'], 'PullRequest')
     displayName: Check formatting
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $RUST_LINT_TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
@@ -83,7 +83,7 @@ jobs:
     displayName: Install Rust matrix
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       export PKG_CONFIG_ALLOW_CROSS=1
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         export TOOLCHAIN
@@ -105,9 +105,9 @@ jobs:
               eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
               eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_FLAGS-}"
               RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-              [ ! -d examples ] || for example in examples/*; do example=${example##*/}; (
-                RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --no-default-features --features "$FEATURES" $ALL_FEATURES
-                RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example ${example%.*} --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+              for example in examples/*.rs examples/*/; do example=${example#"examples/"}; example=${example%".rs"}; example=${example%"/"}; (
+                RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
+                RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
             ); done
           ); done; IFS=$OLD_IFS
@@ -116,7 +116,7 @@ jobs:
     displayName: Build & Run
 
   - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace;
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       export PKG_CONFIG_ALLOW_CROSS=1
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
         cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
