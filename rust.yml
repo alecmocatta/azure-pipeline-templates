@@ -4,6 +4,7 @@ parameters:
 
 jobs:
 - job: ''
+  timeoutInMinutes: 120
 
   variables: ${{ parameters.default }}
   strategy:
