@@ -148,7 +148,7 @@ jobs:
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       cargo +$RUST_LINT_TOOLCHAIN package
       if cargo +$RUST_LINT_TOOLCHAIN publish; then
-        echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
+        echo "##vso[task.setvariable variable=release_tag]v$(cargo +$RUST_LINT_TOOLCHAIN pkgid | cut -d# -f2 | cut -d: -f2)"
         echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
       fi
     env:
