@@ -128,6 +128,8 @@ jobs:
 - job: cargo_publish
   pool:
     vmImage: 'ubuntu-16.04'
+  dependsOn: ''
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
@@ -138,7 +140,6 @@ jobs:
         echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
         echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
       fi
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     env:
       CARGO_REGISTRY_TOKEN: $(cargo_registry_token)
     displayName: Cargo publish
