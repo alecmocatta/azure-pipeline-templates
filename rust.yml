@@ -14,7 +14,6 @@ jobs:
   pool:
     vmImage: $(imageName)
 
-  # Inspired by https://github.com/tokio-rs/tokio/blob/master/ci/azure-install-rust.yml
   steps:
   - checkout: self
     persistCredentials: true
