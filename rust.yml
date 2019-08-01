@@ -136,7 +136,7 @@ jobs:
 - job: publish
   pool:
     vmImage: 'ubuntu-16.04'
-#   dependsOn: test
+  dependsOn: test
   condition: and('${{ parameters.endpoint }}', eq(variables['Build.SourceBranch'], 'refs/heads/master'), succeeded())
   steps:
   - bash: |
