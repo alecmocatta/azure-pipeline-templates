@@ -19,26 +19,31 @@ jobs:
   - checkout: self
     persistCredentials: true
 
-  - script: |
-      curl -sSf -o rustup-init.exe https://win.rustup.rs
-      rustup-init.exe -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]%USERPROFILE%\.cargo\bin;%PATH%"
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
+      if ! rustup; then
+        curl -sSf -o rustup-init.exe https://win.rustup.rs
+        rustup-init.exe -y --default-toolchain none
+        echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$USERPROFILE\.cargo}\bin;$PATH"
+      fi
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     displayName: 'Install Rust (Windows)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
+      if ! rustup; then
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+        echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+      fi
     condition: eq(variables['Agent.OS'], 'Darwin')
     displayName: 'Install Rust (Darwin)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      sudo apt-get purge rustc cargo ||:
-      unset RUSTUP_HOME && unset CARGO_HOME
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
+      if ! rustup; then
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+        echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+      fi
       sudo dpkg --add-architecture i386
       sudo apt-get update
       sudo apt-get install -y gcc-multilib libssl-dev:i386 musl-tools
@@ -136,10 +141,10 @@ jobs:
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      sudo apt-get purge rustc cargo ||:
-      unset RUSTUP_HOME && unset CARGO_HOME
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_LINT_TOOLCHAIN
-      export PATH="$HOME/cargo/bin:$PATH"
+      if ! rustup; then
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+        echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+      fi
       cargo +$RUST_LINT_TOOLCHAIN package
       if cargo +$RUST_LINT_TOOLCHAIN publish; then
         echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
