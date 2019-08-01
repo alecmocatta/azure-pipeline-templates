@@ -137,7 +137,6 @@ jobs:
       if cargo publish; then
         echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
         echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
-        echo "##vso[task.setvariable variable=github_connection]${BUILD_REPOSITORY_NAME%%/*}"
       fi
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     env:
@@ -146,7 +145,7 @@ jobs:
 
   - task: GithubRelease@0
     inputs:
-      gitHubConnection: '${{ parameters.endpoint }}
+      gitHubConnection: ${{ parameters.endpoint }}
       tagSource: 'manual'
       tag: '$(release_tag)'
       title: '$(release_tag) - $(release_date)'
