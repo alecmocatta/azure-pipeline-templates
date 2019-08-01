@@ -3,7 +3,7 @@ parameters:
   matrix: {}
 
 jobs:
-- job: 'test'
+- job: test
   timeoutInMinutes: 0
 
   variables: ${{ parameters.default }}
@@ -125,15 +125,15 @@ jobs:
     displayName: Check documentation
 
 
-- job: cargo_publish
+- job: publish
   pool:
     vmImage: 'ubuntu-16.04'
   dependsOn: test
-  condition: succeeded()
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_LINT_TOOLCHAIN
       export PATH="$PATH:$HOME/.cargo/bin"
       cargo package
       if cargo publish; then
