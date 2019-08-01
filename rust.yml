@@ -22,21 +22,21 @@ jobs:
   - script: |
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]%USERPROFILE%\.cargo\bin;%PATH%"
+      #echo "##vso[task.setvariable variable=PATH;]%USERPROFILE%\.cargo\bin;%PATH%"
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     displayName: 'Install Rust (Windows)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
+      #echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
     condition: eq(variables['Agent.OS'], 'Darwin')
     displayName: 'Install Rust (Darwin)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
+      #echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
       sudo dpkg --add-architecture i386
       sudo apt-get update
       sudo apt-get install -y gcc-multilib libssl-dev:i386 musl-tools
@@ -135,7 +135,7 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_LINT_TOOLCHAIN
-      export PATH="$HOME/.cargo/bin:$PATH"
+      export PATH="$HOME/cargo/bin:$PATH"
       cargo +$RUST_LINT_TOOLCHAIN package
       if cargo +$RUST_LINT_TOOLCHAIN publish; then
         echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
