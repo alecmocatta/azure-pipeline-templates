@@ -3,7 +3,7 @@ parameters:
   matrix: {}
 
 jobs:
-- job: ''
+- job: 'test'
   timeoutInMinutes: 0
 
   variables: ${{ parameters.default }}
@@ -128,7 +128,7 @@ jobs:
 - job: cargo_publish
   pool:
     vmImage: 'ubuntu-16.04'
-  dependsOn: ''
+  dependsOn: test
   condition: succeeded()
   steps:
   - bash: |
