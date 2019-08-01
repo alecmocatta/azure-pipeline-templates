@@ -129,7 +129,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   dependsOn: ''
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: succeeded()
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
