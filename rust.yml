@@ -123,3 +123,32 @@ jobs:
         cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
       done
     displayName: Check documentation
+
+
+- job: cargo_publish
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+      export PATH="$PATH:$HOME/.cargo/bin"
+      cargo package
+      if cargo publish; then
+        echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
+        echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
+        echo "##vso[task.setvariable variable=github_connection]${BUILD_REPOSITORY_NAME%%/*}"
+      fi
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    env:
+      CARGO_REGISTRY_TOKEN: $(cargo_registry_token)
+    displayName: Cargo publish
+
+  - task: GithubRelease@0
+    inputs:
+      gitHubConnection: '$(github_connection)'
+      tagSource: 'manual'
+      tag: '$(release_tag)'
+      title: '$(release_tag) - $(release_date)'
+      addChangeLog: true
+    condition: variables.release_tag
