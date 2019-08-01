@@ -1,6 +1,7 @@
 parameters:
   variables: {}
   matrix: {}
+  endpoint: ''
 
 jobs:
 - job: test
@@ -129,7 +130,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   dependsOn: test
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(${{ parameters.endpoint }}, eq(variables['Build.SourceBranch'], 'refs/heads/master'), succeeded())
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
