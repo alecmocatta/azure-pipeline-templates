@@ -35,9 +35,8 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      sudo apt-get purge rustc cargo
-      unset RUSTUP_HOME
-      unset CARGO_HOME
+      sudo apt-get purge rustc cargo ||:
+      unset RUSTUP_HOME && unset CARGO_HOME
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
       echo "##vso[task.setvariable variable=PATH;]$HOME/.cargo/bin:$PATH"
       sudo dpkg --add-architecture i386
@@ -137,6 +136,8 @@ jobs:
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
+      sudo apt-get purge rustc cargo ||:
+      unset RUSTUP_HOME && unset CARGO_HOME
       curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUST_LINT_TOOLCHAIN
       export PATH="$HOME/cargo/bin:$PATH"
       cargo +$RUST_LINT_TOOLCHAIN package
