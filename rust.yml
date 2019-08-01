@@ -146,7 +146,7 @@ jobs:
 
   - task: GithubRelease@0
     inputs:
-      gitHubConnection: '$(github_connection)'
+      gitHubConnection: '${{ parameters.endpoint }}
       tagSource: 'manual'
       tag: '$(release_tag)'
       title: '$(release_tag) - $(release_date)'
