@@ -21,7 +21,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      if ! rustup; then
+      if ! rustup -V; then
         curl -sSf -o rustup-init.exe https://win.rustup.rs
         rustup-init.exe -y --default-toolchain none
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$USERPROFILE\.cargo}\bin;$PATH"
@@ -31,7 +31,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      if ! rustup; then
+      if ! rustup -V; then
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
@@ -40,7 +40,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      if ! rustup; then
+      if ! rustup -V; then
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
@@ -141,10 +141,11 @@ jobs:
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      if ! rustup; then
+      if ! rustup -V; then
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
+      rustup toolchain install $RUST_LINT_TOOLCHAIN
       cargo +$RUST_LINT_TOOLCHAIN package
       if cargo +$RUST_LINT_TOOLCHAIN publish; then
         echo "##vso[task.setvariable variable=release_tag]v$(cargo pkgid | cut -d# -f2 | cut -d: -f2)"
