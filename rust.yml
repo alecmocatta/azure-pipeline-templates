@@ -129,6 +129,7 @@ jobs:
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
         cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
       done
+      cargo +$RUST_LINT_TOOLCHAIN package
     displayName: Check documentation
 
 
@@ -145,7 +146,6 @@ jobs:
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
       rustup toolchain install $RUST_LINT_TOOLCHAIN
-      cargo +$RUST_LINT_TOOLCHAIN package
       if cargo +$RUST_LINT_TOOLCHAIN publish; then
         cargo +$RUST_LINT_TOOLCHAIN generate-lockfile
         CARGO_PKGID=$(cargo +$RUST_LINT_TOOLCHAIN pkgid | cut -d# -f2 | cut -d: -f2)
