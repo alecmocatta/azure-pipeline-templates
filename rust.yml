@@ -101,6 +101,7 @@ jobs:
             [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
             export FEATURES
             export ALL_FEATURES
+            WORKSPACE_ROOT=$(pwd)
             for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml | sort); do ( # TODO: ensure this matches cargo metadata
               pushd ${WORKSPACE_MEMBER%/Cargo.toml} > /dev/null
               for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
@@ -111,6 +112,7 @@ jobs:
                 case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS -C target-cpu=native";; esac
                 cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
+              [ "$WORKSPACE_ROOT" == $(pwd) ] || unset RUST_TEST_FLAGS RUST_TEST_RELEASE_FLAGS
               for TARGET in $RUST_TARGET_RUN; do (
                 eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
                 eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_RELEASE_FLAGS-}"
