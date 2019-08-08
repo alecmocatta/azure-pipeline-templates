@@ -155,7 +155,7 @@ jobs:
       WORKSPACE_ROOT=$(pwd)
       for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml | sort -r); do (
         pushd ${WORKSPACE_MEMBER%/Cargo.toml} > /dev/null
-        [ "$WORKSPACE_ROOT" == $(pwd) ] || cargo +$RUST_LINT_TOOLCHAIN publish ||:
+        [ "$WORKSPACE_ROOT" == $(pwd) ] || (cargo +$RUST_LINT_TOOLCHAIN publish && sleep 120) ||:
         popd > /dev/null
       ); done
       if cargo +$RUST_LINT_TOOLCHAIN publish; then
@@ -176,4 +176,5 @@ jobs:
       tag: '$(release_tag)'
       title: '$(release_tag) - $(release_date)'
       addChangeLog: true
+      compareWith: lastRelease
     condition: variables.release_tag
