@@ -127,6 +127,7 @@ jobs:
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
       ); done
+    condition: ne(variables['Build.Reason'], 'IndividualCI') # TODO: Think this thru. Intended to stop dupe tests.
     displayName: Build & Run
 
   - bash: |
