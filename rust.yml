@@ -143,8 +143,7 @@ jobs:
 - job: publish
   pool:
     vmImage: 'ubuntu-16.04'
-  dependsOn: test
-  condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), succeeded())
+  condition: eq(variables['Build.Reason'], 'IndividualCI') # TODO: Think this thru. Intended to stop dupe tests.
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
