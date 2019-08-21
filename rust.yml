@@ -6,6 +6,7 @@ parameters:
 jobs:
 - job: test
   timeoutInMinutes: 0
+  condition: ne(variables['Build.Reason'], 'IndividualCI') # TODO: Think this thru. Intended to stop dupe tests.
 
   variables: ${{ parameters.default }}
   strategy:
@@ -105,24 +106,24 @@ jobs:
             WORKSPACE_ROOT=$(pwd)
             for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml | sort); do ( # TODO: ensure this matches cargo metadata
               pushd ${WORKSPACE_MEMBER%/Cargo.toml} > /dev/null
-              # for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-              #   cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
-              # ); done
-              # for TARGET in $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-              #   cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES
-              #   case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS -C target-cpu=native";; esac
-              #   cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES --release
-              # ); done
+              for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
+                cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
+              ); done
+              for TARGET in $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
+                cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES
+                case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS ";; esac
+                cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+              ); done
               [ "$WORKSPACE_ROOT" == $(pwd) ] || unset RUST_TEST_FLAGS RUST_TEST_RELEASE_FLAGS
               for TARGET in $RUST_TARGET_RUN; do (
-                # eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
-                # eval 'RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_RELEASE_FLAGS-}"
-                # RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
+                eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
+                eval 'RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_RELEASE_FLAGS-}"
+                RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+                RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
                 for example in examples/*.rs examples/*/; do example=${example#"examples/"}; example=${example%".rs"}; example=${example%"/"}; (
                   RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                  RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+                  RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
                 ); done
               ); done
               popd > /dev/null
@@ -130,7 +131,6 @@ jobs:
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
       ); done
-    condition: ne(variables['Build.Reason'], 'IndividualCI') # TODO: Think this thru. Intended to stop dupe tests.
     displayName: Build & Run
 
   - bash: |
