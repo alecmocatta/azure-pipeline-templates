@@ -40,7 +40,6 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      cat /proc/cpuinfo
       if ! rustup -V; then
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
@@ -119,8 +118,6 @@ jobs:
                 eval 'RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES' "${RUST_TEST_FLAGS-}"
                 eval 'RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release' "${RUST_TEST_RELEASE_FLAGS-}"
                 RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
                 for example in examples/*.rs examples/*/; do example=${example#"examples/"}; example=${example%".rs"}; example=${example%"/"}; (
                   RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
                   RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
