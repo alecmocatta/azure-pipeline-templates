@@ -6,7 +6,7 @@ parameters:
 jobs:
 - job: test
   timeoutInMinutes: 0
-  condition: ne(variables['Build.Reason'], 'IndividualCI') # TODO: Think this thru. Intended to stop dupe tests.
+  condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
 
   variables: ${{ parameters.default }}
   strategy:
@@ -143,7 +143,7 @@ jobs:
 - job: publish
   pool:
     vmImage: 'ubuntu-16.04'
-  condition: eq(variables['Build.Reason'], 'IndividualCI') # TODO: Think this thru. Intended to stop dupe tests.
+  #condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
