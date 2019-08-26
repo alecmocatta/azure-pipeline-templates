@@ -152,18 +152,18 @@ jobs:
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
       rustup toolchain install $RUST_LINT_TOOLCHAIN
-      # WORKSPACE_ROOT=$(pwd)
-      # for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml | sort -r); do (
-      #   pushd ${WORKSPACE_MEMBER%/Cargo.toml} > /dev/null
-      #   [ "$WORKSPACE_ROOT" == $(pwd) ] || (cargo +$RUST_LINT_TOOLCHAIN publish && sleep 120) ||:
-      #   popd > /dev/null
-      # ); done
-      # if cargo +$RUST_LINT_TOOLCHAIN publish; then
+      WORKSPACE_ROOT=$(pwd)
+      for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml | sort -r); do (
+        pushd ${WORKSPACE_MEMBER%/Cargo.toml} > /dev/null
+        [ "$WORKSPACE_ROOT" == $(pwd) ] || (cargo +$RUST_LINT_TOOLCHAIN publish && sleep 120) ||:
+        popd > /dev/null
+      ); done
+      if cargo +$RUST_LINT_TOOLCHAIN publish; then
         cargo +$RUST_LINT_TOOLCHAIN generate-lockfile
         CARGO_PKGID=$(cargo +$RUST_LINT_TOOLCHAIN pkgid | cut -d# -f2 | cut -d: -f2)
         echo "##vso[task.setvariable variable=release_tag]v$CARGO_PKGID"
         echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
-      # fi
+      fi
     env:
       RUST_LINT_TOOLCHAIN: ${{ parameters.default.rust_lint_toolchain }}
       CARGO_REGISTRY_TOKEN: $(cargo_registry_token)
