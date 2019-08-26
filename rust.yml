@@ -147,11 +147,11 @@ jobs:
   steps:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      # if ! rustup -V; then
-      #   curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
-      #   echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
-      # fi
-      # rustup toolchain install $RUST_LINT_TOOLCHAIN
+      if ! rustup -V; then
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+        echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+      fi
+      rustup toolchain install $RUST_LINT_TOOLCHAIN
       # WORKSPACE_ROOT=$(pwd)
       # for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml | sort -r); do (
       #   pushd ${WORKSPACE_MEMBER%/Cargo.toml} > /dev/null
