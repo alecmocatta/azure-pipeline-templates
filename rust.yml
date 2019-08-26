@@ -159,10 +159,10 @@ jobs:
       #   popd > /dev/null
       # ); done
       # if cargo +$RUST_LINT_TOOLCHAIN publish; then
-      #   cargo +$RUST_LINT_TOOLCHAIN generate-lockfile
-      #   CARGO_PKGID=$(cargo +$RUST_LINT_TOOLCHAIN pkgid | cut -d# -f2 | cut -d: -f2)
-      #   echo "##vso[task.setvariable variable=release_tag]v$CARGO_PKGID"
-      #   echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
+        cargo +$RUST_LINT_TOOLCHAIN generate-lockfile
+        CARGO_PKGID=$(cargo +$RUST_LINT_TOOLCHAIN pkgid | cut -d# -f2 | cut -d: -f2)
+        echo "##vso[task.setvariable variable=release_tag]v$CARGO_PKGID"
+        echo "##vso[task.setvariable variable=release_date]$(date +%Y-%m-%d)"
       # fi
     env:
       RUST_LINT_TOOLCHAIN: ${{ parameters.default.rust_lint_toolchain }}
