@@ -106,7 +106,7 @@ jobs:
             WORKSPACE_ROOT=$(pwd)
             for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml -exec dirname {} \; | LC_COLLATE=C sort -r); do ( # TODO: ensure this matches cargo metadata
               pushd $WORKSPACE_MEMBER > /dev/null
-              WORKSPACE_MEMBER_CANONICALIZED=$(echo "$WORKSPACE_MEMBER" | tr '\' '/' | sed -E 's/^\.[\/]?//')
+              WORKSPACE_MEMBER_CANONICALIZED=$(echo "$WORKSPACE_MEMBER" | tr '\' '/' | sed -E 's/^\.\/?//')
               [ -z "$WORKSPACE_MEMBER_CANONICALIZED" ] || WORKSPACE_MEMBER_CANONICALIZED+='/'
               FEATURES=$(echo "$FEATURES" | tr ' ' '\n' | sed -n -E "s|^${WORKSPACE_MEMBER_CANONICALIZED}([^/]*)$|\1|p" | tr '\n' ' ')
               for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
@@ -136,8 +136,10 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       export PKG_CONFIG_ALLOW_CROSS=1
+      FEATURES="${RUST_DOC_FEATURES-}"
+      [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
-        cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
+        cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES &>/dev/null
       done
       #cargo +$RUST_LINT_TOOLCHAIN package
     displayName: Check documentation
