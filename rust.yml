@@ -104,9 +104,9 @@ jobs:
             export FEATURES
             export ALL_FEATURES
             WORKSPACE_ROOT=$(pwd)
-            for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml -exec dirname {} \; | sed -E 's/^\.[\/\\]?//' | LC_COLLATE=C sort -r); do ( # TODO: ensure this matches cargo metadata
+            for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml -exec dirname {} \; | LC_COLLATE=C sort -r); do ( # TODO: ensure this matches cargo metadata
               pushd $WORKSPACE_MEMBER > /dev/null
-              WORKSPACE_MEMBER_CANONICALIZED=$(echo "$WORKSPACE_MEMBER" | tr '\' '/')
+              WORKSPACE_MEMBER_CANONICALIZED=$(echo "$WORKSPACE_MEMBER" | tr '\' '/' | sed -E 's/^\.[\/]?//')
               [ -z "$WORKSPACE_MEMBER_CANONICALIZED" ] || WORKSPACE_MEMBER_CANONICALIZED+='/'
               FEATURES=$(echo "$FEATURES" | tr ' ' '\n' | sed -n -E "s|^${WORKSPACE_MEMBER_CANONICALIZED}([^/]*)$|\1|p" | tr '\n' ' ')
               for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
@@ -156,7 +156,7 @@ jobs:
       fi
       rustup toolchain install $RUST_LINT_TOOLCHAIN
       WORKSPACE_ROOT=$(pwd)
-      for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml -exec dirname {} \; | sed -E 's/^\.[\/\\]?//' | LC_COLLATE=C sort -r); do (
+      for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml -exec dirname {} \; | LC_COLLATE=C sort -r); do (
         pushd $WORKSPACE_MEMBER > /dev/null
         [ "$WORKSPACE_ROOT" == $(pwd) ] || (cargo +$RUST_LINT_TOOLCHAIN publish && sleep 120) ||:
         popd > /dev/null
