@@ -131,6 +131,9 @@ jobs:
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
       ); done
+    env:
+      AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+      AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
     displayName: Build & Run
 
   - bash: |
