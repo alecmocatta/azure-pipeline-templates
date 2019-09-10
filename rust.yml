@@ -113,10 +113,10 @@ jobs:
               for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
                 cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
               ); done
-              for TARGET in $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-                cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES
+              for TARGET in $RUST_TARGET_BUILD; do (
+                RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
                 case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS ";; esac
-                cargo +$TOOLCHAIN build --verbose --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+                RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
               for TARGET in $RUST_TARGET_RUN; do (
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
