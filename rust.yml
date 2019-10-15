@@ -53,7 +53,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      rustup toolchain install $RUST_LINT_TOOLCHAIN
+      rustup toolchain install $RUST_LINT_TOOLCHAIN --no-self-update
       rustup component add rustfmt --toolchain $RUST_LINT_TOOLCHAIN
     displayName: Install Rust lint
 
@@ -84,7 +84,7 @@ jobs:
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $RUST_LINT_TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         if [ "$TOOLCHAIN" != "$RUST_LINT_TOOLCHAIN" ]; then
-          rustup toolchain install $TOOLCHAIN
+          rustup toolchain install $TOOLCHAIN --no-self-update
           for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
         fi
         rustc +$TOOLCHAIN -Vv
@@ -162,7 +162,7 @@ jobs:
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
-      rustup toolchain install $RUST_LINT_TOOLCHAIN
+      rustup toolchain install $RUST_LINT_TOOLCHAIN --no-self-update
       cargo +$RUST_LINT_TOOLCHAIN install cargo-print
       cargo +$RUST_LINT_TOOLCHAIN generate-lockfile
       PACKAGES=$(cargo +$RUST_LINT_TOOLCHAIN print publish)
