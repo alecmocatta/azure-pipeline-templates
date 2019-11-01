@@ -104,12 +104,14 @@ jobs:
             [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
             export FEATURES
             export ALL_FEATURES
+            PACKAGES=$(cargo +$RUST_LINT_TOOLCHAIN print publish)
             WORKSPACE_ROOT=$(pwd)
-            for WORKSPACE_MEMBER in $(find . -type f -name Cargo.toml -exec dirname {} \; | LC_COLLATE=C sort -r); do ( # TODO: ensure this matches cargo metadata
-              pushd $WORKSPACE_MEMBER > /dev/null
-              WORKSPACE_MEMBER_CANONICALIZED=$(echo "$WORKSPACE_MEMBER" | tr '\' '/' | sed -E 's/^\.\/?//')
-              [ -z "$WORKSPACE_MEMBER_CANONICALIZED" ] || WORKSPACE_MEMBER_CANONICALIZED+='/'
-              FEATURES=$(echo "$FEATURES" | tr ' ' '\n' | sed -n -E "s|^${WORKSPACE_MEMBER_CANONICALIZED}([^/]*)$|\1|p" | tr '\n' ' ')
+            for PACKAGE in $PACKAGES; do (
+              PACKAGE_DIRECTORY=$(cargo +$RUST_LINT_TOOLCHAIN print directory "$PACKAGE")
+              pushd "$PACKAGE_DIRECTORY" > /dev/null
+              PACKAGE_CANONICALIZED=$(echo "${PACKAGE_DIRECTORY#$WORKSPACE_ROOT}" | tr '\' '/')
+              [ -z "$PACKAGE_CANONICALIZED" ] || PACKAGE_CANONICALIZED+='/'
+              FEATURES=$(echo "$FEATURES" | tr ' ' '\n' | sed -n -E "s|^${PACKAGE_CANONICALIZED}([^/]*)$|\1|p" | tr '\n' ' ')
               for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
                 cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
               ); done
