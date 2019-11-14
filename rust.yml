@@ -81,11 +81,11 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       rustup component add clippy --toolchain $RUST_LINT_TOOLCHAIN
-      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $RUST_LINT_TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
+      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do rustup target add --toolchain $RUST_LINT_TOOLCHAIN "$TARGET"; done
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         if [ "$TOOLCHAIN" != "$RUST_LINT_TOOLCHAIN" ]; then
           rustup toolchain install $TOOLCHAIN --no-self-update
-          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do [ "$TARGET" = $(rustup target list --toolchain $TOOLCHAIN | grep default | grep -o -e '^[^ ]\+') ] || rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
+          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
         fi
         rustc +$TOOLCHAIN -Vv
         cargo +$TOOLCHAIN -V
