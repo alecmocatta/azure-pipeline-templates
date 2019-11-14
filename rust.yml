@@ -104,33 +104,23 @@ jobs:
             [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
             export FEATURES
             export ALL_FEATURES
-            PACKAGES=$(cargo +$RUST_LINT_TOOLCHAIN print publish)
-            WORKSPACE_ROOT=$(pwd)
-            for PACKAGE in $PACKAGES; do (
-              PACKAGE_DIRECTORY=$(cargo +$RUST_LINT_TOOLCHAIN print directory "$PACKAGE")
-              pushd "$PACKAGE_DIRECTORY" > /dev/null
-              PACKAGE_CANONICALIZED=$(echo "${PACKAGE_DIRECTORY#$WORKSPACE_ROOT}" | tr '\' '/')
-              [ -z "$PACKAGE_CANONICALIZED" ] || PACKAGE_CANONICALIZED+='/'
-              FEATURES=$(echo "$FEATURES" | tr ' ' '\n' | sed -n -E "s|^${PACKAGE_CANONICALIZED}([^/]*)$|\1|p" | tr '\n' ' ')
-              for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-                cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
+            for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
+              cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --workspace --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
+            ); done
+            for TARGET in $RUST_TARGET_BUILD; do (
+              RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES
+              case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS ";; esac
+              RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+            ); done
+            for TARGET in $RUST_TARGET_RUN; do (
+              RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES
+              RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+              RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES
+              examples=$(cargo +$RUST_LINT_TOOLCHAIN print examples --no-default-features --features "$FEATURES" $ALL_FEATURES)
+              for example in $examples; do (
+                RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
+                RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
-              for TARGET in $RUST_TARGET_BUILD; do (
-                RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS ";; esac
-                RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
-              ); done
-              for TARGET in $RUST_TARGET_RUN; do (
-                RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
-                RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                examples=$(cargo +$RUST_LINT_TOOLCHAIN print examples --no-default-features --features "$FEATURES" $ALL_FEATURES)
-                for example in $examples; do (
-                  RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
-                  RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
-                ); done
-              ); done
-              popd > /dev/null
             ); done
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
