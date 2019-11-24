@@ -116,6 +116,7 @@ jobs:
             for TARGET in $RUST_TARGET_RUN; do (
               RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES
               RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN test --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES --release
+              [ "$TARGET" = "wasm32-unknown-unknown" ] && exit
               RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN bench --target "$TARGET" --workspace --no-default-features --features "$FEATURES" $ALL_FEATURES
               examples=$(cargo +$RUST_LINT_TOOLCHAIN print examples --no-default-features --features "$FEATURES" $ALL_FEATURES)
               for example in $examples; do (
