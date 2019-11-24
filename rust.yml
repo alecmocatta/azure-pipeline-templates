@@ -85,7 +85,12 @@ jobs:
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         if [ "$TOOLCHAIN" != "$RUST_LINT_TOOLCHAIN" ]; then
           rustup toolchain install $TOOLCHAIN --no-self-update
-          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do rustup target add --toolchain $TOOLCHAIN "$TARGET"; done
+          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
+            rustup target add --toolchain $TOOLCHAIN "$TARGET"
+            if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
+              cargo +$TOOLCHAIN install wasm-bindgen-cli
+            fi
+          done
         fi
         rustc +$TOOLCHAIN -Vv
         cargo +$TOOLCHAIN -V
@@ -95,6 +100,7 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       export PKG_CONFIG_ALLOW_CROSS=1
+      export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner
       cargo +$RUST_LINT_TOOLCHAIN install --debug cargo-print
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         export TOOLCHAIN
