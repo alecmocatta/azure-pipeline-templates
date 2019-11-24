@@ -83,7 +83,7 @@ jobs:
       for TOOLCHAIN in $RUST_LINT_TOOLCHAIN $RUST_TOOLCHAIN; do (
         rustup toolchain install --no-self-update --target $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN -- $TOOLCHAIN
         for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
-          if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
+          if [ "$TOOLCHAIN" = "$RUST_LINT_TOOLCHAIN" -a "$TARGET" = "wasm32-unknown-unknown" ]; then
             cargo +$TOOLCHAIN install --debug wasm-bindgen-cli
           fi
         done
