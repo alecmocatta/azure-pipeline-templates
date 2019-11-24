@@ -54,7 +54,7 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       rustup set profile minimal
-      rustup toolchain install --no-self-update --component rustfmt --component clippy $RUST_LINT_TOOLCHAIN
+      rustup toolchain install --no-self-update --component rustfmt clippy -- $RUST_LINT_TOOLCHAIN
     displayName: Install Rust lint
 
   - bash: |
@@ -81,7 +81,7 @@ jobs:
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       for TOOLCHAIN in $RUST_LINT_TOOLCHAIN $RUST_TOOLCHAIN; do (
-        rustup toolchain install --no-self-update $TOOLCHAIN --target $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN
+        rustup toolchain install --no-self-update --target $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN -- $TOOLCHAIN
         for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
           if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
             cargo +$TOOLCHAIN install --debug wasm-bindgen-cli
