@@ -103,9 +103,9 @@ jobs:
       export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_CCX=x86_64-linux-musl-g++
       export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=x86_64-linux-musl-gcc
       export CC_i686_unknown_linux_musl=i686-linux-musl-gcc
-      export CARGO_TARGET_i686_UNKNOWN_LINUX_MUSL_CC=i686-linux-musl-gcc
-      export CARGO_TARGET_i686_UNKNOWN_LINUX_MUSL_CCX=i686-linux-musl-g++
-      export CARGO_TARGET_i686_UNKNOWN_LINUX_MUSL_LINKER=i686-linux-musl-gcc
+      export CARGO_TARGET_I686_UNKNOWN_LINUX_MUSL_CC=i686-linux-musl-gcc
+      export CARGO_TARGET_I686_UNKNOWN_LINUX_MUSL_CCX=i686-linux-musl-g++
+      export CARGO_TARGET_I686_UNKNOWN_LINUX_MUSL_LINKER=i686-linux-musl-gcc
       cargo +$RUST_LINT_TOOLCHAIN install --debug cargo-print
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         export TOOLCHAIN
