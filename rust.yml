@@ -108,6 +108,18 @@ jobs:
       export CXX_aarch64_unknown_linux_musl=aarch64-linux-musl-g++
       export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
       cargo +$RUST_LINT_TOOLCHAIN install --debug cargo-print
+      OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
+        export RUSTFLAGS
+        OLD_IFS=$IFS IFS=";" RUST_FEATURES="$RUST_FEATURES;"; for FEATURES in $RUST_FEATURES; do ( IFS=$OLD_IFS
+          [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
+          export FEATURES
+          export ALL_FEATURES
+          for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
+            cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
+          ); done
+        ); done; IFS=$OLD_IFS
+      ); done; IFS=$OLD_IFS
+      rm Cargo.lock
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         export TOOLCHAIN
         OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
@@ -116,9 +128,6 @@ jobs:
             [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
             export FEATURES
             export ALL_FEATURES
-            for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do (
-              cargo +$RUST_LINT_TOOLCHAIN clippy --target "$TARGET" --all --all-targets --no-default-features --features "$FEATURES" $ALL_FEATURES -- -D warnings
-            ); done
             for TARGET in $RUST_TARGET_BUILD; do (
               RUST_BACKTRACE=full cargo +$TOOLCHAIN test --no-run --target "$TARGET" --all --no-default-features --features "$FEATURES" $ALL_FEATURES
               case "${TARGET%%-*}" in i386|i686|x86_64) RUSTFLAGS="$RUSTFLAGS ";; esac
@@ -137,6 +146,7 @@ jobs:
             ); done
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
+        rm Cargo.lock
       ); done
     env:
       RUST_LINT_TOOLCHAIN: ${{ parameters.default.rust_lint_toolchain }}
