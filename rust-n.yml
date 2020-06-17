@@ -7,7 +7,7 @@ parameters:
   endpoint: ''
 
 jobs:
-- job: ${{ format('test-{0}', parameters.ordinal) }}
+- job: ${{ format('test_{0}', parameters.ordinal) }}
   timeoutInMinutes: 0
   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
 
