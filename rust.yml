@@ -108,9 +108,11 @@ jobs:
       export CXX_aarch64_unknown_linux_musl=aarch64-linux-musl-g++
       export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
       cargo +$RUST_LINT_TOOLCHAIN install --debug cargo-print
+      RUST_FEATURES_CLIPPY="${RUST_FEATURES_CLIPPY:-$RUST_FEATURES}"
+      export RUST_FEATURES_CLIPPY
       OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
         export RUSTFLAGS
-        OLD_IFS=$IFS IFS=";" RUST_FEATURES="$RUST_FEATURES;"; for FEATURES in $RUST_FEATURES; do ( IFS=$OLD_IFS
+        OLD_IFS=$IFS IFS=";" RUST_FEATURES_CLIPPY="$RUST_FEATURES_CLIPPY;"; for FEATURES in $RUST_FEATURES_CLIPPY; do ( IFS=$OLD_IFS
           [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
           export FEATURES
           export ALL_FEATURES
