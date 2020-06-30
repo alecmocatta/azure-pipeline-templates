@@ -37,7 +37,7 @@ jobs:
         echo "##vso[task.setvariable variable=PATH;]${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
       fi
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-    displayName: 'Install Rust (Darwin)'
+    displayName: 'Install Rust (macOS)'
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
@@ -57,7 +57,7 @@ jobs:
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       rustup set profile minimal
       rustup toolchain install --no-self-update --component rustfmt clippy -- $RUST_LINT_TOOLCHAIN
-    displayName: Install Rust lint
+    displayName: Install Rust lint toolchain
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
@@ -92,7 +92,7 @@ jobs:
           cargo +$RUST_LINT_TOOLCHAIN install --debug wasm-bindgen-cli
         fi
       done
-    displayName: Install Rust matrix
+    displayName: Install Rust toolchains
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
@@ -107,7 +107,13 @@ jobs:
       export CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc
       export CXX_aarch64_unknown_linux_musl=aarch64-linux-musl-g++
       export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
-      cargo +$RUST_LINT_TOOLCHAIN install --debug cargo-print
+      FEATURES="${RUST_DOC_FEATURES-}"
+      [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
+      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
+        cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES &>/dev/null
+      done
+      #cargo +$RUST_LINT_TOOLCHAIN package
+      rm Cargo.lock
       RUST_FEATURES_CLIPPY="${RUST_FEATURES_CLIPPY:-$RUST_FEATURES}"
       export RUST_FEATURES_CLIPPY
       OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
@@ -122,6 +128,22 @@ jobs:
         ); done; IFS=$OLD_IFS
       ); done; IFS=$OLD_IFS
       rm Cargo.lock
+    displayName: Lint code
+
+- bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
+      export PKG_CONFIG_ALLOW_CROSS=1
+      export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner
+      export CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc
+      export CXX_x86_64_unknown_linux_musl=x86_64-linux-musl-g++
+      export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
+      export CC_i686_unknown_linux_musl=i686-linux-musl-gcc
+      export CXX_i686_unknown_linux_musl=i686-linux-musl-g++
+      export CARGO_TARGET_I686_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
+      export CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc
+      export CXX_aarch64_unknown_linux_musl=aarch64-linux-musl-g++
+      export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
+      cargo +$RUST_LINT_TOOLCHAIN install --debug cargo-print
       for TOOLCHAIN in $RUST_TOOLCHAIN; do (
         export TOOLCHAIN
         OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
@@ -152,21 +174,7 @@ jobs:
       ); done
     env:
       RUST_LINT_TOOLCHAIN: ${{ parameters.default.rust_lint_toolchain }}
-      AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-      AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-    displayName: Build & Run
-
-  - bash: |
-      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      export PKG_CONFIG_ALLOW_CROSS=1
-      FEATURES="${RUST_DOC_FEATURES-}"
-      [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
-      for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
-        cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES &>/dev/null
-      done
-      #cargo +$RUST_LINT_TOOLCHAIN package
-    displayName: Check documentation
-
+    displayName: Run tests
 
 - job: publish
   pool:
