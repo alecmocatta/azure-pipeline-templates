@@ -130,9 +130,10 @@ jobs:
         cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES &>/dev/null
       done
       #cargo +$RUST_LINT_TOOLCHAIN package
+      rm Cargo.lock
     displayName: Lint code
 
-  - bash: |
+ - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
       export PKG_CONFIG_ALLOW_CROSS=1
       export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner
