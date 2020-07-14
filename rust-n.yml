@@ -9,7 +9,7 @@ parameters:
 jobs:
 - job: ${{ format('test_{0}', parameters.ordinal) }}
   timeoutInMinutes: 0
-  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), or(ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'Schedule')))
 
   variables: ${{ parameters.default }}
   strategy:
