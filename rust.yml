@@ -6,7 +6,7 @@ parameters:
 jobs:
 - job: test
   timeoutInMinutes: 0
-  condition: and(succeeded(), or(ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'Schedule'))
+  condition: and(succeeded(), or(ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'Schedule')))
 
   variables: ${{ parameters.default }}
   strategy:
