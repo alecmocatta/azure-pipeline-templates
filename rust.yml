@@ -124,7 +124,7 @@ jobs:
       FEATURES="${RUST_DOC_FEATURES-}"
       [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
-        cargo +$RUST_LINT_TOOLCHAIN doc --no-deps --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES &>/dev/null
+        cargo +$RUST_LINT_TOOLCHAIN doc --all --no-deps --target "$TARGET" --no-default-features --features "$FEATURES" $ALL_FEATURES &>/dev/null
       done
       #cargo +$RUST_LINT_TOOLCHAIN package
       rm Cargo.lock
