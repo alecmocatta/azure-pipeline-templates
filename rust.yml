@@ -87,6 +87,10 @@ jobs:
         rustc +$TOOLCHAIN -Vv
         cargo +$TOOLCHAIN -V
       ); done
+      rustup component add --toolchain "$RUST_LINT_TOOLCHAIN" miri
+      for TARGET in $RUST_TARGET_RUN; do
+        cargo +$RUST_LINT_TOOLCHAIN miri setup --target "$TARGET"
+      done
       for TARGET in $RUST_TARGET_CHECK $RUST_TARGET_BUILD $RUST_TARGET_RUN; do
         if [ "$TARGET" = "wasm32-unknown-unknown" ]; then
           cargo +$RUST_LINT_TOOLCHAIN install --debug wasm-bindgen-cli
@@ -174,6 +178,7 @@ jobs:
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
                 RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
+              RUST_BACKTRACE=full cargo +$RUST_LINT_TOOLCHAIN miri test --target "$TARGET" $RUST_PACKAGES --no-default-features --features "$FEATURES" $ALL_FEATURES -- -Zmiri-disable-isolation
             ); done
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
