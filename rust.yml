@@ -212,7 +212,8 @@ jobs:
           export FEATURES
           export ALL_FEATURES
           for TARGET in $RUST_TARGET_RUN; do (
-            [ "$TARGET" = "wasm32-unknown-unknown" ] && exit
+            # avoid windows till https://github.com/rust-lang/miri/issues/1013
+            [ "$TARGET" = "wasm32-unknown-unknown" -o "$TARGET" = "x86_64-pc-windows-msvc" ] && exit
             cargo +$RUST_LINT_TOOLCHAIN clean
             RUST_BACKTRACE=full cargo +$RUST_LINT_TOOLCHAIN miri test --target "$TARGET" $RUST_PACKAGES --no-default-features --features "$FEATURES" $ALL_FEATURES -- -Zmiri-disable-isolation
           ); done
