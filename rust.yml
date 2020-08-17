@@ -178,8 +178,6 @@ jobs:
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
                 RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
-              cargo +$RUST_LINT_TOOLCHAIN clean
-              RUST_BACKTRACE=full cargo +$RUST_LINT_TOOLCHAIN miri test --target "$TARGET" $RUST_PACKAGES --no-default-features --features "$FEATURES" $ALL_FEATURES -- -Zmiri-disable-isolation
             ); done
           ); done; IFS=$OLD_IFS
         ); done; IFS=$OLD_IFS
@@ -188,6 +186,41 @@ jobs:
     env:
       RUST_LINT_TOOLCHAIN: ${{ parameters.default.rust_lint_toolchain }}
     displayName: Run tests
+
+  - bash: |
+      set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
+      export PKG_CONFIG_ALLOW_CROSS=1
+      export CFLAGS_wasm32_unknown_unknown="--target=wasm32-unknown-wasi --sysroot $HOME/wasi-sysroot"
+      export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner
+      export CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc
+      export CXX_x86_64_unknown_linux_musl=x86_64-linux-musl-g++
+      export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
+      export CC_i686_unknown_linux_musl=i686-linux-musl-gcc
+      export CXX_i686_unknown_linux_musl=i686-linux-musl-g++
+      export CARGO_TARGET_I686_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
+      export CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc
+      export CXX_aarch64_unknown_linux_musl=aarch64-linux-musl-g++
+      export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=rust-lld
+      RUST_PACKAGES="${RUST_PACKAGES:---all}"
+      export RUST_PACKAGES
+      RUST_FEATURES_MIRI="${RUST_FEATURES_MIRI:-$RUST_FEATURES}"
+      export RUST_FEATURES_MIRI
+      OLD_IFS=$IFS IFS=";" RUST_FLAGS="$RUST_FLAGS;"; for RUSTFLAGS in $RUST_FLAGS; do ( IFS=$OLD_IFS
+        export RUSTFLAGS
+        OLD_IFS=$IFS IFS=";" RUST_FEATURES_MIRI="$RUST_FEATURES_MIRI;"; for FEATURES in $RUST_FEATURES_MIRI; do ( IFS=$OLD_IFS
+          [ "$FEATURES" = "all" ] && FEATURES="" ALL_FEATURES="--all-features" || ALL_FEATURES=""
+          export FEATURES
+          export ALL_FEATURES
+          for TARGET in $RUST_TARGET_RUN; do (
+            [ "$TARGET" = "wasm32-unknown-unknown" ] && exit
+            cargo +$RUST_LINT_TOOLCHAIN clean
+            RUST_BACKTRACE=full cargo +$RUST_LINT_TOOLCHAIN miri test --target "$TARGET" $RUST_PACKAGES --no-default-features --features "$FEATURES" $ALL_FEATURES -- -Zmiri-disable-isolation
+          ); done
+        ); done; IFS=$OLD_IFS
+      ); done; IFS=$OLD_IFS
+    env:
+      RUST_LINT_TOOLCHAIN: ${{ parameters.default.rust_lint_toolchain }}
+    displayName: Run tests with miri
 
 - job: publish
   pool:
