@@ -61,9 +61,9 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      cargo +$RUST_LINT_TOOLCHAIN fmt -- --check || (
+      cargo +$RUST_LINT_TOOLCHAIN fmt --all -- --check || (
         git reset --hard HEAD^2
-        cargo +$RUST_LINT_TOOLCHAIN fmt
+        cargo +$RUST_LINT_TOOLCHAIN fmt --all
         git config user.email tidy.bot@example.com
         git config user.name "Tidy Bot"
         git add -A
@@ -76,7 +76,7 @@ jobs:
 
   - bash: |
       set -o errexit; set -o pipefail; set -o nounset; set -o xtrace; shopt -s nullglob;
-      cargo +$RUST_LINT_TOOLCHAIN fmt -- --check
+      cargo +$RUST_LINT_TOOLCHAIN fmt --all -- --check
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     displayName: Check formatting
 
