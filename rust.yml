@@ -178,7 +178,7 @@ jobs:
                 RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES
                 RUSTFLAGS="$RUSTFLAGS " RUST_BACKTRACE=full cargo +$TOOLCHAIN run --target "$TARGET" --example "$example" --no-default-features --features "$FEATURES" $ALL_FEATURES --release
               ); done
-              cargo clean
+              cargo +$RUST_LINT_TOOLCHAIN clean
               RUST_BACKTRACE=full cargo +$RUST_LINT_TOOLCHAIN miri test --target "$TARGET" $RUST_PACKAGES --no-default-features --features "$FEATURES" $ALL_FEATURES -- -Zmiri-disable-isolation
             ); done
           ); done; IFS=$OLD_IFS
